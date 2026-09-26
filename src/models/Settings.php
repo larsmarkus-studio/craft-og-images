@@ -26,6 +26,13 @@ class Settings extends Model
     /** Templates are `{templateRoot}/{sectionHandle}`, falling back to `{templateRoot}/default`. */
     public string $templateRoot = '_og';
 
+    /**
+     * Files sent along with the page (fonts, logos), referenced in the template by filename.
+     * Paths with aliases and wildcards, e.g. `['@webroot/assets/fonts/*.woff2']`.
+     * Default: everything in `templates/{templateRoot}/assets/`.
+     */
+    public ?array $assetFiles = null;
+
     public int $width = 1200;
     public int $height = 630;
 

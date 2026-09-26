@@ -92,7 +92,7 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
    - Log clear errors (auth failure, timeout, allow-list rejection, 4xx/5xx body) with `Craft::error(..., 'lms-og-images')`. Never log credentials.
 
 6. **Gotenberg request**: `POST /forms/chromium/screenshot/html`, multipart, with basic auth, sent through `Craft::createGuzzleClient()`.
-   - Files: the rendered `index.html`, plus every file in `templates/{templateRoot}/assets/` (fonts, logo, CSS if external). The template references them by relative path, e.g. `url('inter.woff2')`.
+   - Files: the rendered `index.html`, plus the `assetFiles` setting (aliases and wildcards, e.g. `@webroot/assets/fonts/*.woff2`, so the site's own fonts are used without copies; default `templates/{templateRoot}/assets/*`). The template references them by relative path, e.g. `url('inter.woff2')`.
    - Form fields (checked against Gotenberg 8.37): `width`, `height`, `format`, `quality` (jpeg only), `skipNetworkIdleEvent=false` (the default is true), `waitForExpression` = fonts loaded and all `<img>` complete, `failOnResourceLoadingFailed=true`, `failOnResourceHttpStatusCodes=[499,599]`, `failOnConsoleExceptions=true`.
    - Check these in the official docs for your Gotenberg 8.x version before implementing, and don't guess:
      - every field name and default above;
@@ -122,7 +122,7 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
 9. **Preview while editing**: add a preview target to each section with URL format `og-preview/{canonicalId}/{siteId}`.
    - `og-preview/<entryId>/<siteId>` renders the OG template as HTML with the unsaved draft, scaled to fit the preview pane (no Gotenberg call, so it updates live). `?render=1` returns the real image from Gotenberg.
    - Only answers requests with a valid Craft preview token (404 otherwise), so drafts and disabled entries never leak and full-page caches never store it.
-   - `og-preview/<file>` serves `templates/{templateRoot}/assets/` so relative font and image paths resolve like they do in Gotenberg (a `<base>` tag is injected).
+   - `og-preview/<file>` serves the `assetFiles` so relative font and image paths resolve like they do in Gotenberg (a `<base>` tag is injected).
    - The site ID is in the URL because sites can share a base URL; the current site can't tell them apart.
 
 ## Config and security

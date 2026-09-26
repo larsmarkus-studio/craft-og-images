@@ -9,6 +9,7 @@ return [
 
     // Everything below is optional; these are the defaults.
     // 'templateRoot' => '_og',
+    // 'assetFiles' => ['@webroot/assets/fonts/*.woff2'], // default: templates/_og/assets/*
     // 'width' => 1200,
     // 'height' => 630,
     // 'format' => 'jpeg',

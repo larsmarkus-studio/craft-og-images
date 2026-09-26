@@ -66,17 +66,21 @@ class Images extends Component
     }
 
     /**
-     * Files in `templates/{templateRoot}/assets/`, sent along with index.html.
+     * Files sent along with index.html (the `assetFiles` setting), keyed by filename.
      *
      * @return array<string, string> filename => path
      */
     public function assetFiles(): array
     {
-        $dir = Craft::getAlias('@templates') . '/' . Plugin::getInstance()->getSettings()->templateRoot . '/assets';
+        $settings = Plugin::getInstance()->getSettings();
+        $patterns = $settings->assetFiles ?? ["@templates/$settings->templateRoot/assets/*"];
+
         $files = [];
-        foreach (glob("$dir/*") ?: [] as $path) {
-            if (is_file($path)) {
-                $files[basename($path)] = $path;
+        foreach ($patterns as $pattern) {
+            foreach (glob(Craft::getAlias($pattern)) ?: [] as $path) {
+                if (is_file($path)) {
+                    $files[basename($path)] = $path;
+                }
             }
         }
 
