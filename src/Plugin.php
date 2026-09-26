@@ -8,10 +8,12 @@ use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\elements\Entry;
 use craft\events\ElementEvent;
+use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\services\Elements;
 use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
 use larsmarkusstudio\ogimages\jobs\GenerateOgImageJob;
 use larsmarkusstudio\ogimages\models\Settings;
 use larsmarkusstudio\ogimages\services\Gotenberg;
@@ -53,6 +55,12 @@ class Plugin extends BasePlugin
 
         Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
             $event->sender->set('ogImages', OgImagesVariable::class);
+        });
+
+        // Preview target: og-preview/{canonicalId}/{siteId} (see controllers/PreviewController)
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function (RegisterUrlRulesEvent $event) {
+            $event->rules['og-preview/<entryId:\d+>/<siteId:\d+>'] = 'lms-og-images/preview/index';
+            $event->rules['og-preview/<file:[\w\-]+\.\w+>'] = 'lms-og-images/preview/asset';
         });
 
         // Fires after the save transaction commits

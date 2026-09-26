@@ -38,7 +38,7 @@ The plugin never creates filesystems or volumes: those are project config. It on
 ## Scope
 In 1.0: Gotenberg client, queue job, asset storage and cleanup, Twig helper, console commands, config file settings, docs.
 
-Out of 1.0 (list them as roadmap in the README, don't build them): CP settings page, editor UI, per-entry overrides, template gallery, CP preview button, PDF features, other renderers (add a renderer interface when a second one exists).
+Out of 1.0 (list them as roadmap in the README, don't build them): CP settings page, editor UI, per-entry overrides, template gallery, PDF features, other renderers (add a renderer interface when a second one exists).
 
 ## Requirements
 
@@ -118,6 +118,12 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
      - the file isn't the newest asset for its entry/site.
      It skips any asset referenced in the `relations` table. Document running it on a cron.
    - `lms-og-images/test <entryId> [--site=]` renders synchronously and prints the template used, the hash, timing, size and errors. `--html` dumps the rendered HTML.
+
+9. **Preview while editing**: add a preview target to each section with URL format `og-preview/{canonicalId}/{siteId}`.
+   - `og-preview/<entryId>/<siteId>` renders the OG template as HTML with the unsaved draft, scaled to fit the preview pane (no Gotenberg call, so it updates live). `?render=1` returns the real image from Gotenberg.
+   - Only answers requests with a valid Craft preview token (404 otherwise), so drafts and disabled entries never leak and full-page caches never store it.
+   - `og-preview/<file>` serves `templates/{templateRoot}/assets/` so relative font and image paths resolve like they do in Gotenberg (a `<base>` tag is injected).
+   - The site ID is in the URL because sites can share a base URL; the current site can't tell them apart.
 
 ## Config and security
 - No secrets in code: everything comes from env.
