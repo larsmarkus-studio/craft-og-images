@@ -92,7 +92,7 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
 
 6. **Gotenberg request**: `POST /forms/chromium/screenshot/html`, multipart, with basic auth, sent through `Craft::createGuzzleClient()`.
    - Files: the rendered `index.html`, plus every file in `templates/{templateRoot}/assets/` (fonts, logo, CSS if external). The template references them by relative path, e.g. `url('inter.woff2')`.
-   - Form fields: `width`, `height`, `format`, `quality`, `waitForExpression=window.ogReady === true`, and `skipNetworkIdleEvent=false`.
+   - Form fields (checked against Gotenberg 8.37): `width`, `height`, `format`, `quality` (jpeg only), `skipNetworkIdleEvent=false` (the default is true), `waitForExpression` = fonts loaded and all `<img>` complete, `failOnResourceLoadingFailed=true`, `failOnResourceHttpStatusCodes=[499,599]`, `failOnConsoleExceptions=true`.
    - Check these in the official docs for your Gotenberg 8.x version before implementing, and don't guess:
      - every field name and default above;
      - the fail-on-resource options, so a missing font fails the job instead of rendering in a fallback font;
@@ -101,7 +101,8 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
      - **CSS**: inline in the template, via `<style>{{ source('_og/og.css') }}</style>` or plain `<style>`. This needs no network.
      - **Fonts**: send them as files from `_og/assets/`. This avoids network and CORS (the page's origin is `file://`, so a cross-origin font needs `Access-Control-Allow-Origin: *`).
      - **Entry images** (hero photos): absolute CDN/transform URLs. The allow-list only needs the CDN host.
-   - Readiness: the template sets `document.fonts.ready.then(() => window.ogReady = true)`. If the template has images, it should wait for those too.
+   - Readiness needs nothing in the template: the plugin's wait expression covers fonts and images.
+   - Allow-list rejections are silent in Gotenberg (it fails blocked requests with `net::ERR_ACCESS_DENIED`, which `failOnResourceLoadingFailed` ignores on purpose). The plugin appends a small script that throws on load when an image or font failed, so the job fails with the exact URL instead of rendering a blank spot.
 
 7. **Twig helper**:
    - `craft.ogImages.url(entry)` returns the asset URL for the entry's site, or the fallback. It is one query, so memoize it per request.

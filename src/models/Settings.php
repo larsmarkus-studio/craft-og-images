@@ -57,7 +57,8 @@ class Settings extends Model
     {
         $url = is_array($this->fallbackUrl) ? ($this->fallbackUrl[$siteHandle] ?? null) : $this->fallbackUrl;
 
-        return $url !== null ? App::parseEnv($url) : null;
+        // An empty or unset env var means no fallback
+        return $url !== null ? (App::parseEnv($url) ?: null) : null;
     }
 
     protected function defineRules(): array
