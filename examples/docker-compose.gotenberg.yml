@@ -1,0 +1,37 @@
+# Gotenberg for the OG Images plugin. Deploy as-is behind a TLS-terminating reverse proxy.
+#
+# Set these env vars on the host:
+#   GOTENBERG_USER, GOTENBERG_PASSWORD  basic auth, the same values as the plugin's env.
+#   CHROMIUM_ALLOW_LIST                 comma-separated regexes of what Chromium may load:
+#                                       the uploaded page plus one entry per CDN host that serves entry images.
+#     ^file:///tmp/,^https://cdn\.example\.com[:/],^https://cdn\.example\.org[:/]
+#   HTTPS is checked per host (Gotenberg's proxy sees https://host:443, not the path), so match the host
+#   followed by ":" or "/". Don't anchor on a path. Avoid "$" in the value; compose may interpolate it.
+#
+# Tested with 8.37.0-chromium. Check flag names in https://gotenberg.dev/docs/configuration before bumping.
+
+services:
+  gotenberg:
+    image: gotenberg/gotenberg:8.37.0-chromium
+    command:
+      - gotenberg
+      - --api-enable-basic-auth
+      - --api-timeout=30s
+      - --api-disable-health-check-route-telemetry
+      - --pdfengines-disable-routes
+      - --webhook-disable
+      - --prometheus-disable-collect
+    environment:
+      GOTENBERG_API_BASIC_AUTH_USERNAME: ${GOTENBERG_USER}
+      GOTENBERG_API_BASIC_AUTH_PASSWORD: ${GOTENBERG_PASSWORD}
+      CHROMIUM_ALLOW_LIST: ${CHROMIUM_ALLOW_LIST}
+    # Port 3000, reached through the reverse proxy. For local use add: ports: ["3000:3000"]
+    expose:
+      - "3000"
+    mem_limit: 1536m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

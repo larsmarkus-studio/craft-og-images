@@ -1,0 +1,44 @@
+{
+    "name": "larsmarkus-studio/craft-og-images",
+    "description": "Self-hosted Open Graph images for Craft CMS 5: Twig templates rendered to images by Gotenberg.",
+    "type": "craft-plugin",
+    "license": "MIT",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "open-graph",
+        "og-image",
+        "gotenberg"
+    ],
+    "support": {
+        "source": "https://github.com/larsmarkus-studio/craft-og-images",
+        "issues": "https://github.com/larsmarkus-studio/craft-og-images/issues"
+    },
+    "require": {
+        "php": "^8.2",
+        "craftcms/cms": "^5.6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "larsmarkusstudio\\ogimages\\": "src/"
+        }
+    },
+    "extra": {
+        "handle": "lms-og-images",
+        "name": "OG Images",
+        "developer": "Lars Markus",
+        "developerUrl": "https://larsmarkus.studio",
+        "documentationUrl": "https://github.com/larsmarkus-studio/craft-og-images",
+        "class": "larsmarkusstudio\\ogimages\\Plugin"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        },
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}
