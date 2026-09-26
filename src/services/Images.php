@@ -159,6 +159,11 @@ class Images extends Component
             Craft::$app->getElements()->deleteElement($old, true);
         }
 
+        // SEOmate caches meta per entry and only clears it when the entry itself is saved
+        if (class_exists(\vaersaagod\seomate\helpers\CacheHelper::class)) {
+            \vaersaagod\seomate\helpers\CacheHelper::deleteMetaCacheForElement($entry);
+        }
+
         return $asset;
     }
 

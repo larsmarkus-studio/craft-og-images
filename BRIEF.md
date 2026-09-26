@@ -108,7 +108,8 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
 7. **Twig helper**:
    - `craft.ogImages.url(entry)` returns the asset URL for the entry's site, or the fallback. It is one query, so memoize it per request.
    - `craft.ogImages.tags(entry)` outputs `og:image`, `og:image:width`, `og:image:height` and `twitter:image` as `Markup`.
-   - The README covers plain `tags()` and SEOmate only: feed `url()` into SEOmate's Twig override (e.g. `{% set seomate = { meta: { image: craft.ogImages.url(entry) } } %}`). Check whether SEOmate accepts a URL string there or needs an Asset. It also says to use either `tags()` or SEOmate, never both.
+   - The README covers plain `tags()` and SEOmate only. SEOmate: `{% set seomate = craft.ogImages.seomate(entry ?? null, seomate ?? {}) %}` right before `{% hook 'seomateMeta' %}` in the layout. SEOmate only accepts an Asset for `og:image` and would transform it into a second, re-encoded copy (Craft transforms even at identical size), and a plain URL string comes out empty. So the helper passes the URL with width, height and type, and removes `og:image` from SEOmate's `imageTransformMap` for that page only. Without a generated image, SEOmate's own settings apply unchanged. SEOmate caches meta per entry and only clears it when the entry is saved, so the job clears it after swapping images. Use either `tags()` or SEOmate, never both.
+   - `craft.ogImages.asset(entry)` returns the Asset. Lookups are memoized per request and never throw: a misconfiguration logs an error and the page renders without the image.
 
 8. **Console commands** (all accept `--site=`, default all sites):
    - `lms-og-images/backfill [--section=] [--limit=] [--force]` queues jobs. Without `--force`, it only queues entry/site pairs that have no image.

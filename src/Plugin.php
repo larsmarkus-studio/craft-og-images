@@ -11,10 +11,12 @@ use craft\events\ElementEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\services\Elements;
+use craft\web\twig\variables\CraftVariable;
 use larsmarkusstudio\ogimages\jobs\GenerateOgImageJob;
 use larsmarkusstudio\ogimages\models\Settings;
 use larsmarkusstudio\ogimages\services\Gotenberg;
 use larsmarkusstudio\ogimages\services\Images;
+use larsmarkusstudio\ogimages\variables\OgImagesVariable;
 use yii\base\Event;
 
 /**
@@ -48,6 +50,10 @@ class Plugin extends BasePlugin
     public function init(): void
     {
         parent::init();
+
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $event) {
+            $event->sender->set('ogImages', OgImagesVariable::class);
+        });
 
         // Fires after the save transaction commits
         Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $event) {
