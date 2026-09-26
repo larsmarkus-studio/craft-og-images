@@ -116,17 +116,80 @@ class Images extends Component
     }
 
     /**
-     * The newest image for this entry + site in the volume's root folder, if any.
+     * Renders and stores a new image when the hash changed, then hard-deletes the older versions.
+     *
+     * @return Asset|null the new image, or null when the current one is up to date
+     * @throws Exception when rendering or saving fails; the old image is left in place
+     */
+    public function generate(Entry $entry): ?Asset
+    {
+        $volume = $this->volume();
+        $rendered = $this->render($entry);
+        $files = $this->assetFiles();
+        $hash = substr($this->hash($rendered['html'], $files), 0, Filename::HASH_LENGTH);
+        $versions = $this->versions($entry);
+
+        foreach ($versions as $version) {
+            if (Filename::parse($version->filename)['hash'] === $hash) {
+                return null;
+            }
+        }
+
+        $bytes = Plugin::getInstance()->gotenberg->screenshot($rendered['html'], $files);
+
+        $filename = Filename::build(self::TYPE, $entry->id, $entry->siteId, $hash, Plugin::getInstance()->getSettings()->format);
+        $tempPath = Craft::$app->getPath()->getTempPath() . '/' . $filename;
+        file_put_contents($tempPath, $bytes);
+
+        $asset = new Asset();
+        $asset->tempFilePath = $tempPath;
+        $asset->filename = $filename;
+        $asset->newFolderId = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)->id;
+        $asset->setVolumeId($volume->id);
+        $asset->setScenario(Asset::SCENARIO_CREATE);
+
+        if (!Craft::$app->getElements()->saveElement($asset)) {
+            @unlink($tempPath);
+            throw new Exception("Could not save $filename: " . implode(' ', $asset->getFirstErrors()));
+        }
+
+        // Only now that the new image exists. Saving and deleting assets is also what
+        // refreshes Craft's template caches and Blitz for pages showing the image.
+        foreach ($versions as $old) {
+            Craft::$app->getElements()->deleteElement($old, true);
+        }
+
+        return $asset;
+    }
+
+    /**
+     * The newest image for this entry + site, if any.
      */
     public function current(Entry $entry): ?Asset
     {
-        $volume = $this->volume();
+        return $this->versions($entry)[0] ?? null;
+    }
 
-        return Asset::find()
+    /**
+     * All images for this entry + site in the volume's root folder, newest first.
+     * Only exact filename matches (see Filename::parse), so nothing else in the volume is touched.
+     *
+     * @return Asset[]
+     */
+    public function versions(Entry $entry): array
+    {
+        $volume = $this->volume();
+        $assets = Asset::find()
             ->volumeId($volume->id)
             ->folderId(Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)->id)
             ->filename(Filename::prefix(self::TYPE, $entry->id, $entry->siteId) . '*')
-            ->orderBy(['dateCreated' => SORT_DESC])
-            ->one();
+            ->orderBy(['dateCreated' => SORT_DESC, 'id' => SORT_DESC])
+            ->all();
+
+        return array_values(array_filter($assets, function (Asset $asset) use ($entry) {
+            $parsed = Filename::parse($asset->filename);
+
+            return $parsed && $parsed['type'] === self::TYPE && $parsed['entryId'] === $entry->id && $parsed['siteId'] === $entry->siteId;
+        }));
     }
 }

@@ -73,9 +73,10 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
 
 3. **Templates by convention**: `{templateRoot}/{sectionHandle}` falls back to `{templateRoot}/default`. The templates receive `entry` and `site`.
 
-4. **Event listener** on `Elements::EVENT_AFTER_SAVE_ELEMENT` (verify it fires after the transaction commits; otherwise use `Entry::EVENT_AFTER_PROPAGATE`):
-   - Skip anything where `ElementHelper::isDraftOrRevision()` is true, plus `propagating`, `resaving` and sections that aren't enabled.
-   - Queue one `GenerateOgImageJob(entryId, siteId)` per site the entry exists in. Non-translatable fields propagate, so every site can change. Unchanged sites cost one Twig render and then exit.
+4. **Event listener** on `Elements::EVENT_AFTER_SAVE_ELEMENT` (verified: fires after the save transaction commits). Published saves only:
+   - Skip drafts (including autosaves) and revisions (`ElementHelper::isDraftOrRevision()`), `propagating`, `resaving`, disabled entries and sections that aren't configured.
+   - Pending entries (future post date) do get an image: going live on schedule triggers no save.
+   - Queue one `GenerateOgImageJob(entryId, siteId)` per site the entry is enabled in. Non-translatable fields propagate, so every such site can change. Unchanged sites cost one Twig render and then exit.
 
 5. **Job `GenerateOgImageJob(entryId, siteId)`**:
    - Acquire the mutex `lms-og-images:{entryId}:{siteId}`. If it's held, re-push the job with a short delay and return.
@@ -83,8 +84,8 @@ Out of 1.0 (list them as roadmap in the README, don't build them): CP settings p
    - Set the current site and app language to the entry's site, then render the template in `View::TEMPLATE_MODE_SITE`.
    - Compute the hash. If an asset with that hash already exists, return.
    - Post to Gotenberg and write the returned bytes to a temp file.
-   - Save a new Asset to the OG volume's root folder (`Assets::getRootFolderByVolumeId()`, `SCENARIO_CREATE`, `tempFilePath`, `newFolderId`, `avoidFilenameConflicts`).
-   - After the swap, invalidate caches for the entry with `Craft::$app->getElements()->invalidateCachesForElement($entry)`. The job never saves the entry, so full-page caches (e.g. Blitz) would otherwise keep serving the old, deleted image URL. Verify Blitz actually refreshes; if it doesn't, call Blitz's refresh API when Blitz is installed.
+   - Save a new Asset to the OG volume's root folder (`Assets::getRootFolderByVolumeId()`, `SCENARIO_CREATE`, `tempFilePath`, `newFolderId`). No `avoidFilenameConflicts`: a renamed file would no longer match the filename pattern.
+   - No explicit cache invalidation: saving and deleting the assets already invalidates Craft's template caches, and Blitz refreshes the pages that loaded the old asset. (`invalidateCachesForElement($entry)` was dropped: it clears every entry-tagged cache on the site.)
    - Only after that save succeeds, hard-delete the other `og-{entryId}-{siteId}-*` assets with `deleteElement($asset, true)`. A soft delete leaves the file in storage.
    - On failure: delete the new asset if one was created, keep the old one, and throw.
    - Implement `RetryableJobInterface`: `getTtr()` about 60, `canRetry()` up to 3 attempts. Craft's queue has no built-in backoff, so re-push with `delay` if backoff is needed.
