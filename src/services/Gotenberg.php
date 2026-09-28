@@ -29,7 +29,8 @@ class Gotenberg extends Component
      */
     private const CHECK_SCRIPT = <<<'JS'
 <script>addEventListener('load', () => {
-  const failed = Array.from(document.images).filter(i => !i.naturalWidth).map(i => i.currentSrc || i.src)
+  const failed = Array.from(document.images).filter(i => !i.naturalWidth)
+    .map(i => i.getAttribute('src') ? (i.currentSrc || i.src) : 'an <img> with an empty src (e.g. a transform that returned no URL)')
     .concat(Array.from(document.fonts).filter(f => f.status === 'error').map(f => 'font ' + f.family));
   if (failed.length) throw new Error('OG_RESOURCES_FAILED: ' + failed.join(', '));
 });</script>
