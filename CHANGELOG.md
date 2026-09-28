@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 - 2026-09-28
+
+First release, for testing on production sites.
 
 - Render OG images from Twig templates via Gotenberg's screenshot route, in a queue job per entry and site
 - Published saves only; skip rendering when the rendered HTML is unchanged
@@ -9,3 +11,4 @@
 - `og-preview` route for previewing the template while editing
 - Console commands: `test`, `backfill`, `sweep`
 - `assetFiles` setting for fonts and other local files
+- Render errors name the resource that failed to load, including an `<img>` with an empty `src`
