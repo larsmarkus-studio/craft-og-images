@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 - 2026-10-02
 
 - `onlyWithUrl` setting (default on): entries without a URL get no image, on save, in the queue job and in `backfill`
 
