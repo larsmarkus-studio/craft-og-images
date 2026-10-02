@@ -20,6 +20,13 @@ class Settings extends Model
     /** Section handles that get OG images. */
     public array $sections = [];
 
+    /**
+     * Only entries that have a URL get an image. A section can mix entries with and without a
+     * page (an entry type with no URI format, or one whose URI format depends on a field), and
+     * an entry without a URL has nothing to share.
+     */
+    public bool $onlyWithUrl = true;
+
     /** Handle of the dedicated OG volume (see README: storage setup). */
     public ?string $volume = null;
 
@@ -72,6 +79,7 @@ class Settings extends Model
     {
         return [
             [['width', 'height'], 'integer', 'min' => 1],
+            ['onlyWithUrl', 'boolean'],
             ['quality', 'integer', 'min' => 1, 'max' => 100],
             ['format', 'in', 'range' => ['jpeg', 'png']],
             [['volume', 'templateRoot', 'gotenbergUrl'], 'required'],

@@ -39,6 +39,11 @@ class GenerateOgImageJob extends BaseJob implements RetryableJobInterface
                 return;
             }
 
+            // ...or lost its URL (its URI format depends on a field that has changed)
+            if (Plugin::getInstance()->getSettings()->onlyWithUrl && $entry->uri === null) {
+                return;
+            }
+
             Plugin::getInstance()->images->generate($entry);
         } catch (Throwable $e) {
             Craft::error("Entry $this->entryId, site $this->siteId: {$e->getMessage()}", 'lms-og-images');

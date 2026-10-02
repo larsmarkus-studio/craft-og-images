@@ -100,6 +100,7 @@ return [
 | `gotenbergUser` | `$GOTENBERG_USER` | Basic auth user |
 | `gotenbergPassword` | `$GOTENBERG_PASSWORD` | Basic auth password (never logged) |
 | `sections` | `[]` | Section handles that get OG images |
+| `onlyWithUrl` | `true` | Only entries that have a URL get an image (a section can mix entries with and without a page) |
 | `volume` | `null` | Handle of the dedicated OG volume |
 | `templateRoot` | `'_og'` | Templates are `{templateRoot}/{sectionHandle}`, falling back to `{templateRoot}/default` |
 | `assetFiles` | `templates/{templateRoot}/assets/*` | Files sent along with the page, referenced by filename. Aliases and wildcards work |

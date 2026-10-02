@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `onlyWithUrl` setting (default on): entries without a URL get no image, on save, in the queue job and in `backfill`
+
 ## 0.1.0 - 2026-09-28
 
 First release, for testing on production sites.

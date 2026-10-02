@@ -63,6 +63,10 @@ class BackfillController extends Controller
             if ($this->limit !== null && $queued >= $this->limit) {
                 break;
             }
+            if ($plugin->getSettings()->onlyWithUrl && $entry->uri === null) {
+                $skipped++;
+                continue;
+            }
             if (!$this->force && $plugin->images->current($entry)) {
                 $skipped++;
                 continue;

@@ -73,7 +73,7 @@ class Plugin extends BasePlugin
 
     /**
      * Published saves only: no drafts (including autosaves), revisions, propagated
-     * copies, resaves or disabled entries. Pending entries do get an image, since
+     * copies, resaves, disabled entries or (`onlyWithUrl`) entries without a URL. Pending entries do get an image, since
      * going live on their post date doesn't trigger a save.
      */
     public function shouldGenerate(mixed $element): bool
@@ -83,7 +83,8 @@ class Plugin extends BasePlugin
             && !$element->propagating
             && !$element->resaving
             && $element->enabled
-            && in_array($element->getSection()?->handle, $this->getSettings()->sections, true);
+            && in_array($element->getSection()?->handle, $this->getSettings()->sections, true)
+            && (!$this->getSettings()->onlyWithUrl || $element->uri !== null);
     }
 
     /**
