@@ -145,10 +145,17 @@ class Images extends Component
         $tempPath = Craft::$app->getPath()->getTempPath() . '/' . $filename;
         file_put_contents($tempPath, $bytes);
 
+        // No live asset has this name (versions() above), so a file at the path is left over from a
+        // failed run or a trashed asset, and Craft would refuse to overwrite it
+        $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+        if ($volume->fileExists($folder->path . $filename)) {
+            $volume->deleteFile($folder->path . $filename);
+        }
+
         $asset = new Asset();
         $asset->tempFilePath = $tempPath;
         $asset->filename = $filename;
-        $asset->newFolderId = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)->id;
+        $asset->newFolderId = $folder->id;
         $asset->setVolumeId($volume->id);
         $asset->setScenario(Asset::SCENARIO_CREATE);
 

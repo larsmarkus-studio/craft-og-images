@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 - 2026-10-08
+
+- Delete a stale file at the target path before saving a new image, so a leftover from a failed run or a trashed asset no longer fails every retry with "A file with the name … already exists"
+
 ## 0.1.1 - 2026-10-02
 
 - `onlyWithUrl` setting (default on): entries without a URL get no image, on save, in the queue job and in `backfill`
