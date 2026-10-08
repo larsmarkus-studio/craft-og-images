@@ -23,8 +23,9 @@ use yii\console\ExitCode;
  *
  * Only looks at the configured volume's root folder, and only at files whose name
  * matches the OG pattern exactly. Deletes an image when its entry no longer exists in
- * that site or isn't in a configured section, or when a newer image for the same
- * entry + site exists. Images of disabled entries are kept. Anything referenced from a
+ * that site or isn't in a configured section, when `onlyWithUrl` is on and the entry has
+ * no URL in that site, or when a newer image for the same entry + site exists.
+ * Images of disabled entries are kept. Anything referenced from a
  * relation field is never deleted.
  */
 class SweepController extends Controller
@@ -64,12 +65,17 @@ class SweepController extends Controller
             }
         }
 
-        // Entry/site pairs that may keep an image: existing, in a configured section, any status
+        // Entry/site pairs that may keep an image: existing, in a configured section, with a URL
+        // if `onlyWithUrl` is on, any status
         $entryIds = array_unique(array_map(fn($item) => $item[1]['entryId'], $ours));
         $valid = [];
         if ($entryIds) {
-            $rows = Entry::find()->id($entryIds)->section($plugin->getSettings()->sections)->site('*')->status(null)
-                ->select(['elements.id', 'elements_sites.siteId'])->asArray()->all();
+            $query = Entry::find()->id($entryIds)->section($plugin->getSettings()->sections)->site('*')->status(null)
+                ->select(['elements.id', 'elements_sites.siteId'])->asArray();
+            if ($plugin->getSettings()->onlyWithUrl) {
+                $query->andWhere(['not', ['elements_sites.uri' => null]]);
+            }
+            $rows = $query->all();
             foreach ($rows as $row) {
                 $valid["{$row['id']}-{$row['siteId']}"] = true;
             }
@@ -87,7 +93,7 @@ class SweepController extends Controller
             $key = "{$parsed['entryId']}-{$parsed['siteId']}";
 
             $reason = match (true) {
-                !isset($valid[$key]) => 'entry gone or section not configured',
+                !isset($valid[$key]) => 'entry gone, section not configured or no URL',
                 isset($kept[$key]) => 'older version',
                 default => null,
             };

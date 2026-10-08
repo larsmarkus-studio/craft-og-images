@@ -242,7 +242,7 @@ change only the ones that look different are rendered.
 ```bash
 php craft lms-og-images/sweep [--dry-run]
 ```
-Deletes images whose entry is gone or no longer in a configured section, and older
+Deletes images whose entry is gone, no longer in a configured section or (`onlyWithUrl`) without a URL, and older
 versions. Only looks at the volume root and only at files named like OG images; an
 image referenced from a relation field is never deleted. Run it from cron.
 

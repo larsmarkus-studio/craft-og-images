@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 - 2026-10-08
+
+- `sweep` also deletes images of entries without a URL when `onlyWithUrl` is on, e.g. images made before that setting existed
+
 ## 0.1.2 - 2026-10-08
 
 - Delete a stale file at the target path before saving a new image, so a leftover from a failed run or a trashed asset no longer fails every retry with "A file with the name … already exists"
