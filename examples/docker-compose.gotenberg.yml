@@ -12,7 +12,7 @@
 
 services:
   gotenberg:
-    image: gotenberg/gotenberg:8.37.0-chromium
+    image: gotenberg/gotenberg:8.40.0-chromium
     command:
       - gotenberg
       - --api-enable-basic-auth
